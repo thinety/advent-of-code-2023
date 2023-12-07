@@ -2,16 +2,6 @@ use std::io::Read;
 
 use anyhow::Result;
 
-fn main() -> Result<()> {
-    let mut input = String::new();
-    std::io::stdin().read_to_string(&mut input)?;
-
-    println!("{}", part1(&input));
-    println!("{}", part2(&input));
-
-    Ok(())
-}
-
 fn part1(input: &str) -> u32 {
     input
         .lines()
@@ -55,6 +45,16 @@ fn part2(input: &str) -> u32 {
             10 * digits.first().unwrap() + digits.last().unwrap()
         })
         .sum()
+}
+
+fn main() -> Result<()> {
+    let mut input = String::new();
+    std::io::stdin().read_to_string(&mut input)?;
+
+    println!("{}", part1(&input));
+    println!("{}", part2(&input));
+
+    Ok(())
 }
 
 #[cfg(test)]
