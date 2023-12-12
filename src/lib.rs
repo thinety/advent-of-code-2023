@@ -12,18 +12,16 @@ pub mod day10;
 #[macro_export]
 macro_rules! samples {
     (
-        $( ($func:ident, $name:ident, $input:literal, $answer:literal) ),* $(,)?
+        $( ($name:ident, $func:expr, $input:literal, $answer:expr) ),* $(,)?
     ) => {
         $(
             #[cfg(test)]
             #[test]
             fn $name() {
                 let input = include_str!($input);
-                let output = format!("{}\n", $func(input));
+                let output = format!("{}", $func(input));
 
-                let answer = include_str!($answer);
-
-                assert_eq!(output, answer);
+                assert_eq!(output, $answer);
             }
         )*
     };
