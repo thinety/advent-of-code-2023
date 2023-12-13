@@ -5,14 +5,14 @@ use std::collections::HashMap;
 
 struct Hand {
     cards: [Card; 5],
+    r#type: Type,
     bid: u64,
 }
 
 impl Hand {
-    fn r#type(&self) -> Type {
+    fn new(cards: [Card; 5], bid: u64) -> Self {
         let mut jokers = 0;
-        let mut counts: Vec<u32> = self
-            .cards
+        let mut counts: Vec<u32> = cards
             .iter()
             .fold(HashMap::new(), |mut map, card| {
                 match card {
@@ -35,7 +35,7 @@ impl Hand {
 
         *counts.last_mut().unwrap() += jokers;
 
-        match counts[..] {
+        let r#type = match counts[..] {
             [5] => Type::FiveOfAKind,
             [1, 4] => Type::FourOfAKind,
             [2, 3] => Type::FullHouse,
@@ -44,13 +44,15 @@ impl Hand {
             [1, 1, 1, 2] => Type::OnePair,
             [1, 1, 1, 1, 1] => Type::HighCard,
             _ => unreachable!(),
-        }
+        };
+
+        Self { cards, r#type, bid }
     }
 }
 
 impl Ord for Hand {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        match self.r#type().cmp(&other.r#type()) {
+        match self.r#type.cmp(&other.r#type) {
             std::cmp::Ordering::Equal => self.cards.cmp(&other.cards),
             ordering => ordering,
         }
@@ -65,7 +67,7 @@ impl PartialOrd for Hand {
 impl Eq for Hand {}
 impl PartialEq for Hand {
     fn eq(&self, other: &Self) -> bool {
-        self.r#type().eq(&other.r#type()) && self.cards.eq(&other.cards)
+        self.r#type.eq(&other.r#type) && self.cards.eq(&other.cards)
     }
 }
 

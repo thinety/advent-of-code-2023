@@ -32,10 +32,7 @@ pub(super) fn parse(input: &str) -> Vec<Hand> {
     fn hand(input: &str) -> IResult<&str, Hand> {
         map(
             tuple((card, card, card, card, card, tag(" "), number)),
-            |(c1, c2, c3, c4, c5, _, bid)| Hand {
-                cards: [c1, c2, c3, c4, c5],
-                bid,
-            },
+            |(c1, c2, c3, c4, c5, _, bid)| Hand::new([c1, c2, c3, c4, c5], bid),
         )(input)
     }
     fn hands(input: &str) -> IResult<&str, Vec<Hand>> {
