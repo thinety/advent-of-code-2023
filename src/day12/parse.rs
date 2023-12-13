@@ -5,20 +5,20 @@ use nom::multi::separated_list1;
 use nom::sequence::separated_pair;
 use nom::IResult;
 
-pub(super) fn parse(input: &str) -> Vec<(Vec<u8>, Vec<u32>)> {
-    fn number(input: &str) -> IResult<&str, u32> {
+pub(super) fn parse(input: &str) -> Vec<(Vec<u8>, Vec<usize>)> {
+    fn number(input: &str) -> IResult<&str, usize> {
         map_res(digit1, str::parse)(input)
     }
-    fn numbers(input: &str) -> IResult<&str, Vec<u32>> {
+    fn numbers(input: &str) -> IResult<&str, Vec<usize>> {
         separated_list1(tag(","), number)(input)
     }
-    fn line(input: &str) -> IResult<&str, (Vec<u8>, Vec<u32>)> {
+    fn line(input: &str) -> IResult<&str, (Vec<u8>, Vec<usize>)> {
         map(
             separated_pair(take_until1(" "), tag(" "), numbers),
             |(springs, nums)| (springs.as_bytes().to_vec(), nums),
         )(input)
     }
-    fn parse(input: &str) -> IResult<&str, Vec<(Vec<u8>, Vec<u32>)>> {
+    fn parse(input: &str) -> IResult<&str, Vec<(Vec<u8>, Vec<usize>)>> {
         separated_list1(tag("\n"), line)(input)
     }
 
