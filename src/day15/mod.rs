@@ -29,8 +29,7 @@ struct Lens {
 
 fn hash(input: &str) -> u32 {
     input.chars().fold(0, |mut x, c| {
-        let c = c as u32;
-        x += c;
+        x += c as u32;
         x *= 17;
         x % 256
     })
@@ -52,8 +51,7 @@ pub fn part2(input: &str) -> u32 {
         256
     ];
     for step in &input {
-        let r#box = hash(&step.label) as usize;
-        let r#box = &mut boxes[r#box];
+        let r#box = &mut boxes[hash(&step.label) as usize];
         match step.operation {
             Operation::Dash => {
                 if let Some(lens) = r#box.lenses.remove(&step.label) {

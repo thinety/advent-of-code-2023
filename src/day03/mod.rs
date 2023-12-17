@@ -8,7 +8,7 @@ struct Node {
 
 enum NodeType {
     Number(u32),
-    Char(char),
+    Char(u8),
 }
 
 pub fn part1(input: &str) -> u32 {
@@ -20,7 +20,7 @@ pub fn part1(input: &str) -> u32 {
             if let NodeType::Number(n) = node.r#type {
                 for &ni in &node.neighbors {
                     if let NodeType::Char(c) = nodes[ni].r#type {
-                        if c != '.' {
+                        if c != b'.' {
                             return Some(n);
                         }
                     }
@@ -37,7 +37,7 @@ pub fn part2(input: &str) -> u32 {
     nodes
         .iter()
         .filter_map(|node| {
-            if let NodeType::Char('*') = node.r#type {
+            if let NodeType::Char(b'*') = node.r#type {
                 let mut part_numbers = 0;
                 let mut gear_ratio = 1;
                 for &ni in &node.neighbors {

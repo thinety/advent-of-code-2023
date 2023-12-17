@@ -35,7 +35,7 @@ pub fn part2(input: &str) -> u32 {
         s = 2 * s - v[i];
     }
 
-    total as u32
+    total
 }
 
 crate::samples! {

@@ -9,7 +9,7 @@ use nom::sequence::tuple;
 use nom::IResult;
 
 pub(super) fn parse(input: &str) -> Vec<Hand> {
-    fn number(input: &str) -> IResult<&str, u64> {
+    fn number(input: &str) -> IResult<&str, u32> {
         map_res(digit1, str::parse)(input)
     }
     fn card(input: &str) -> IResult<&str, Card> {

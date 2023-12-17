@@ -37,7 +37,7 @@ pub(super) fn parse(input: &str) -> Vec<Node> {
             } else {
                 reverse_mapping.push((i, j, j + 1));
                 nodes.push(Node {
-                    r#type: NodeType::Char(input[i].as_bytes()[j] as char),
+                    r#type: NodeType::Char(input[i].as_bytes()[j]),
                     neighbors: Vec::new(),
                 });
 

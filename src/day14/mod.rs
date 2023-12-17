@@ -83,7 +83,7 @@ fn east(input: &mut Vec<Vec<u8>>) {
     }
 }
 
-fn solve(input: &Vec<Vec<u8>>) -> usize {
+fn solve(input: &Vec<Vec<u8>>) -> u32 {
     let n = input.len();
     let m = input[0].len();
 
@@ -91,21 +91,21 @@ fn solve(input: &Vec<Vec<u8>>) -> usize {
     for j in 0..m {
         for i in 0..n {
             if input[i][j] == b'O' {
-                ans += n - i;
+                ans += (n - i) as u32;
             }
         }
     }
     ans
 }
 
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> u32 {
     let mut input = parse(input);
 
     north(&mut input);
     solve(&input)
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> u32 {
     let mut input = parse(input);
 
     let (o, p) = {

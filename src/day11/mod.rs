@@ -1,4 +1,4 @@
-pub fn solve(input: &str, expansion_factor: usize) -> usize {
+pub fn solve(input: &str, expansion_factor: u64) -> u64 {
     let input = input
         .lines()
         .map(|l| l.as_bytes().to_vec())
@@ -38,13 +38,13 @@ pub fn solve(input: &str, expansion_factor: usize) -> usize {
     }
 
     let mut ans = 0;
-    for (i, (x1, y1)) in galaxies.iter().enumerate() {
-        let x1 = x1 + prefix_row[x1 + 1];
-        let y1 = y1 + prefix_col[y1 + 1];
+    for (i, &(x1, y1)) in galaxies.iter().enumerate() {
+        let x1 = (x1 as u64) + prefix_row[x1 + 1];
+        let y1 = (y1 as u64) + prefix_col[y1 + 1];
 
-        for (x2, y2) in galaxies[i + 1..].iter() {
-            let x2 = x2 + prefix_row[x2 + 1];
-            let y2 = y2 + prefix_col[y2 + 1];
+        for &(x2, y2) in galaxies[i + 1..].iter() {
+            let x2 = (x2 as u64) + prefix_row[x2 + 1];
+            let y2 = (y2 as u64) + prefix_col[y2 + 1];
 
             ans += x2.abs_diff(x1) + y2.abs_diff(y1);
         }
@@ -53,11 +53,11 @@ pub fn solve(input: &str, expansion_factor: usize) -> usize {
     ans
 }
 
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> u64 {
     solve(input, 2)
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> u64 {
     solve(input, 1000000)
 }
 

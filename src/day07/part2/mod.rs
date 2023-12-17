@@ -6,11 +6,11 @@ use std::collections::HashMap;
 struct Hand {
     cards: [Card; 5],
     r#type: Type,
-    bid: u64,
+    bid: u32,
 }
 
 impl Hand {
-    fn new(cards: [Card; 5], bid: u64) -> Self {
+    fn new(cards: [Card; 5], bid: u32) -> Self {
         let mut jokers = 0;
         let mut counts: Vec<u32> = cards
             .iter()
@@ -99,12 +99,12 @@ enum Type {
     FiveOfAKind,
 }
 
-pub fn part2(input: &str) -> u64 {
+pub fn part2(input: &str) -> u32 {
     let mut hands = parse(input);
     hands.sort();
     hands
         .iter()
         .enumerate()
-        .map(|(i, hand)| (i as u64 + 1) * hand.bid)
+        .map(|(i, hand)| ((i as u32) + 1) * hand.bid)
         .sum()
 }

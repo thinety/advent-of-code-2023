@@ -55,7 +55,7 @@ fn vertical_mirror(input: &Vec<Vec<u8>>, j: usize) -> bool {
     ok
 }
 
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> u32 {
     let input = parse(input);
 
     input
@@ -68,13 +68,13 @@ pub fn part1(input: &str) -> usize {
 
             for i in 0..n - 1 {
                 if horizontal_mirror(block, i) {
-                    ans += 100 * (i + 1);
+                    ans += 100 * ((i as u32) + 1);
                 }
             }
 
             for j in 0..m - 1 {
                 if vertical_mirror(block, j) {
-                    ans += j + 1;
+                    ans += (j as u32) + 1;
                 }
             }
 
@@ -83,7 +83,7 @@ pub fn part1(input: &str) -> usize {
         .sum()
 }
 
-pub fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> u32 {
     let mut input = parse(input);
 
     input
@@ -109,7 +109,7 @@ pub fn part2(input: &str) -> usize {
                     };
                     for i in i_min..i_max {
                         if horizontal_mirror(block, i) {
-                            ans += 100 * (i + 1);
+                            ans += 100 * ((i as u32) + 1);
                         }
                     }
 
@@ -120,7 +120,7 @@ pub fn part2(input: &str) -> usize {
                     };
                     for j in j_min..j_max {
                         if vertical_mirror(block, j) {
-                            ans += j + 1;
+                            ans += (j as u32) + 1;
                         }
                     }
 
