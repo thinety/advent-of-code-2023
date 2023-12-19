@@ -1,9 +1,7 @@
 mod parse;
-use std::iter::once;
-
 use parse::{parse_part1, parse_part2};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone)]
 enum Direction {
     North,
     South,
@@ -11,114 +9,49 @@ enum Direction {
     West,
 }
 
-#[derive(Debug)]
-struct Point(i64, i64);
-
-impl Point {
-    fn cross(&self, other: &Point) -> i64 {
-        self.0 * other.1 - other.0 * self.1
-    }
-}
-
 fn solve(input: &[(Direction, u32)]) -> i64 {
-    let mut right_points = Vec::new();
-    let mut left_points = Vec::new();
+    let mut boundary = 0;
 
-    let (mut x, mut y) = {
-        let (dir, _) = input[0];
-        match dir {
-            Direction::North => (1, 0),
-            Direction::South => (0, -1),
-            Direction::East => (1, -1),
-            Direction::West => (0, 0),
-        }
-    };
+    let mut points = Vec::new();
 
-    for i in 0..input.len() {
-        let ii = if i < input.len() - 1 { i + 1 } else { 0 };
+    let (mut x, mut y) = (0, 0);
+    points.push((x, y));
 
-        let (dir, dis) = input[i];
-        let (next_dir, _) = input[ii];
+    for (dir, dis) in input {
+        let dis = *dis as i64;
+        boundary += dis;
 
         match dir {
             Direction::North => {
-                y += (dis - 1) as i64;
-                match next_dir {
-                    Direction::East => {
-                        right_points.push(Point(x, y));
-                        left_points.push(Point(x - 1, y + 1));
-                    }
-                    Direction::West => {
-                        y += 1;
-                        right_points.push(Point(x, y));
-                        x -= 1;
-                        left_points.push(Point(x, y - 1));
-                    }
-                    _ => unreachable!(),
-                }
+                y += dis;
             }
             Direction::South => {
-                y -= (dis - 1) as i64;
-                match next_dir {
-                    Direction::East => {
-                        y -= 1;
-                        right_points.push(Point(x, y));
-                        x += 1;
-                        left_points.push(Point(x, y + 1));
-                    }
-                    Direction::West => {
-                        right_points.push(Point(x, y));
-                        left_points.push(Point(x + 1, y - 1));
-                    }
-                    _ => unreachable!(),
-                }
+                y -= dis;
             }
             Direction::East => {
-                x += (dis - 1) as i64;
-                match next_dir {
-                    Direction::North => {
-                        x += 1;
-                        right_points.push(Point(x, y));
-                        y += 1;
-                        left_points.push(Point(x - 1, y));
-                    }
-                    Direction::South => {
-                        right_points.push(Point(x, y));
-                        left_points.push(Point(x + 1, y + 1));
-                    }
-                    _ => unreachable!(),
-                }
+                x += dis;
             }
             Direction::West => {
-                x -= (dis - 1) as i64;
-                match next_dir {
-                    Direction::North => {
-                        right_points.push(Point(x, y));
-                        left_points.push(Point(x - 1, y - 1));
-                    }
-                    Direction::South => {
-                        x -= 1;
-                        right_points.push(Point(x, y));
-                        y -= 1;
-                        left_points.push(Point(x + 1, y));
-                    }
-                    _ => unreachable!(),
-                }
+                x -= dis;
             }
         }
+        points.push((x, y));
     }
 
-    let a1: i64 = once(right_points.last().unwrap())
-        .chain(right_points.iter())
-        .zip(right_points.iter())
-        .map(|(p1, p2)| p1.cross(p2))
-        .sum();
-    let a2: i64 = once(left_points.last().unwrap())
-        .chain(left_points.iter())
-        .zip(left_points.iter())
-        .map(|(p1, p2)| p1.cross(p2))
-        .sum();
-    a1.abs().max(a2.abs()) / 2
+    // https://en.wikipedia.org/wiki/Shoelace_formula
+    // can be derived from Stokes' theorem
+    let area = points
+        .iter()
+        .zip(points.iter().skip(1))
+        .map(|((x1, y1), (x2, y2))| x1 * y2 - x2 * y1)
+        .sum::<i64>()
+        .abs()
+        / 2;
+
+    // https://en.wikipedia.org/wiki/Pick's_theorem
+    let inside = area - boundary / 2 + 1;
+
+    inside + boundary
 }
 
 pub fn part1(input: &str) -> i64 {
