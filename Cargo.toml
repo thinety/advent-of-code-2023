@@ -10,6 +10,13 @@ bench = false
 name = "aoc2023"
 bench = false
 
+[[bench]]
+name = "bench"
+harness = false
+
+[dev-dependencies]
+criterion = "0.5.1"
+
 [dependencies]
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
