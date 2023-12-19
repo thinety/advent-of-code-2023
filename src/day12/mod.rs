@@ -75,8 +75,8 @@ pub fn part2(input: &str) -> u64 {
 }
 
 crate::samples! {
-    (part1_sample, part1, "sample.in", "21"),
-    (part1_puzzle, part1, "puzzle.in", "7916"),
-    (part2_sample, part2, "sample.in", "525152"),
-    (part2_puzzle, part2, "puzzle.in", "37366887898686"),
+    (part1_sample, part1, "sample.in", 21),
+    (part1_puzzle, part1, "puzzle.in", 7916),
+    (part2_sample, part2, "sample.in", 525152),
+    (part2_puzzle, part2, "puzzle.in", 37366887898686),
 }

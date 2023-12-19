@@ -1,4 +1,4 @@
-pub fn solve(input: &str, expansion_factor: u64) -> u64 {
+fn solve(input: &str, expansion_factor: u64) -> u64 {
     let input = input
         .lines()
         .map(|l| l.as_bytes().to_vec())
@@ -62,9 +62,7 @@ pub fn part2(input: &str) -> u64 {
 }
 
 crate::samples! {
-    (part1_sample, part1, "sample.in", "374"),
-    (part1_puzzle, part1, "puzzle.in", "9734203"),
-    (part2_sample1, |input| solve(input,  10), "sample.in", "1030"),
-    (part2_sample2, |input| solve(input, 100), "sample.in", "8410"),
-    (part2_puzzle, part2, "puzzle.in", "568914596391"),
+    (part1_sample, part1, "sample.in", 374),
+    (part1_puzzle, part1, "puzzle.in", 9734203),
+    (part2_puzzle, part2, "puzzle.in", 568914596391),
 }

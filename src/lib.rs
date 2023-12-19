@@ -19,18 +19,18 @@ pub mod day18;
 
 #[macro_export]
 macro_rules! samples {
-    (
-        $( ($name:ident, $func:expr, $input:literal, $answer:expr) ),* $(,)?
-    ) => {
-        $(
-            #[cfg(test)]
-            #[test]
-            fn $name() {
-                let input = include_str!($input);
-                let output = format!("{}", $func(input));
+    ( $(($name:ident, $func:path, $input:literal, $answer:literal)),* $(,)? ) => {
+        #[cfg(test)]
+        mod tests {
+            use super::*;
 
-                assert_eq!(output, $answer);
-            }
-        )*
+            $(
+                #[test]
+                fn $name() {
+                    let input = include_str!($input);
+                    assert_eq!($func(input), $answer);
+                }
+            )*
+        }
     };
 }

@@ -169,12 +169,12 @@ pub fn part2(input: &str) -> u32 {
 }
 
 crate::samples! {
-    (part1_sample1, part1, "sample1.in", "4"),
-    (part1_sample2, part1, "sample2.in", "8"),
-    (part1_puzzle, part1, "puzzle.in", "7097"),
-    (part2_sample3, part2, "sample3.in", "4"),
-    (part2_sample4, part2, "sample4.in", "4"),
-    (part2_sample5, part2, "sample5.in", "8"),
-    (part2_sample6, part2, "sample6.in", "10"),
-    (part2_puzzle, part2, "puzzle.in", "355"),
+    (part1_sample1, part1, "sample1.in", 4),
+    (part1_sample2, part1, "sample2.in", 8),
+    (part1_puzzle, part1, "puzzle.in", 7097),
+    (part2_sample3, part2, "sample3.in", 4),
+    (part2_sample4, part2, "sample4.in", 4),
+    (part2_sample5, part2, "sample5.in", 8),
+    (part2_sample6, part2, "sample6.in", 10),
+    (part2_puzzle, part2, "puzzle.in", 355),
 }
