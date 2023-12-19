@@ -50,13 +50,22 @@ pub fn part1(input: &str) -> u64 {
     total
 }
 
+// Some assumptions about the input data are needed for this to work. Some of them:
+// - the length of every cycle must be divisible by the instructions count
+// - every cycle contains exactly one Z node
+// - there are no Z nodes outside the cycles
+// - the distance between each A node and its corresponding Z node is the same
+//   as the length of the cycle that includes that Z node
+// Some further discussion:
+// - https://www.reddit.com/r/adventofcode/comments/18dg1hw/2023_day_8_part_2_about_the_correctness_of_a/
+// - https://www.reddit.com/r/adventofcode/comments/18did3d/2023_day_8_part_1_my_input_maze_plotted_using/
 pub fn part2(input: &str) -> u64 {
     let (directions, nodes) = parse(input);
 
     nodes
         .keys()
-        .filter_map(|k| k.ends_with('A').then_some(k.as_ref()))
-        .map(|mut current: &str| {
+        .filter(|k| k.ends_with('A'))
+        .map(|mut current| {
             let mut directions = directions.iter().cycle();
             let mut total = 0;
 
