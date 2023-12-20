@@ -23,8 +23,8 @@ pub(super) fn parse(input: &str) -> (Workflows, Vec<Part>) {
     }
     fn op(input: &str) -> IResult<&str, Op> {
         alt((
+            value(Op::LessThan, tag("<")),
             value(Op::GreaterThan, tag(">")),
-            value(Op::LesserThan, tag("<")),
         ))(input)
     }
     fn rule(input: &str) -> IResult<&str, Rule> {
@@ -73,7 +73,7 @@ pub(super) fn parse(input: &str) -> (Workflows, Vec<Part>) {
                 )),
                 tag("}"),
             ),
-            |(x, m, a, s)| Part { x, m, a, s },
+            |(x, m, a, s)| [x, m, a, s],
         )(input)
     }
 
