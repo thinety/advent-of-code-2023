@@ -70,6 +70,7 @@ problems! {
     (Day18Part1, aoc2023::day18::part1),
     (Day18Part2, aoc2023::day18::part2),
     (Day19Part1, aoc2023::day19::part1),
+    (Day19Part2, aoc2023::day19::part2),
 }
 
 fn main() -> anyhow::Result<()> {
