@@ -54,36 +54,15 @@ fn settle_blocks(blocks: &mut [Block]) {
     }
 }
 
-fn get_bottom_blocks(blocks: &[Block]) -> Vec<Vec<usize>> {
+// last node is ground
+fn get_top_blocks(blocks: &[Block]) -> Vec<Vec<usize>> {
     let n = blocks.len();
 
-    let mut bottom_blocks = vec![Vec::new(); n];
-
-    for i in 0..n {
-        for j in 0..n {
-            if blocks[j].z2 + 1 == blocks[i].z1
-                && blocks[j].x1 <= blocks[i].x2
-                && blocks[j].x2 >= blocks[i].x1
-                && blocks[j].y1 <= blocks[i].y2
-                && blocks[j].y2 >= blocks[i].y1
-            {
-                bottom_blocks[i].push(j);
-            }
-        }
-    }
-
-    bottom_blocks
-}
-
-fn get_top_blocks(blocks: &[Block]) -> (Vec<usize>, Vec<Vec<usize>>) {
-    let n = blocks.len();
-
-    let mut ground_blocks = Vec::new();
-    let mut top_blocks = vec![Vec::new(); n];
+    let mut top_blocks = vec![Vec::new(); n + 1];
 
     for i in 0..n {
         if blocks[i].z1 == 1 {
-            ground_blocks.push(i);
+            top_blocks[n].push(i);
         }
         for j in 0..n {
             if blocks[i].z2 + 1 == blocks[j].z1
@@ -97,7 +76,7 @@ fn get_top_blocks(blocks: &[Block]) -> (Vec<usize>, Vec<Vec<usize>>) {
         }
     }
 
-    (ground_blocks, top_blocks)
+    top_blocks
 }
 
 fn dfs(i: usize, neighbors: &[Vec<usize>], visited: &mut [bool]) {
@@ -110,48 +89,40 @@ fn dfs(i: usize, neighbors: &[Vec<usize>], visited: &mut [bool]) {
     }
 }
 
-pub fn part1(input: &str) -> u32 {
+fn solve(input: &str) -> (u32, u32) {
     let mut blocks = parse(input);
     let n = blocks.len();
 
     settle_blocks(&mut blocks);
-    let bottom_blocks = get_bottom_blocks(&blocks);
+    let top_blocks = get_top_blocks(&blocks);
 
-    let mut fundamental_block = vec![false; n];
+    let (mut ans1, mut ans2) = (0, 0);
     for i in 0..n {
-        if bottom_blocks[i].len() == 1 {
-            fundamental_block[bottom_blocks[i][0]] = true;
+        let mut visited = vec![false; n+1];
+        visited[i] = true;
+        dfs(n, &top_blocks, &mut visited);
+
+        let mut is_articulation = false;
+        for i in 0..n {
+            if !visited[i] {
+                is_articulation = true;
+                ans2 += 1;
+            }
+        }
+        if !is_articulation {
+            ans1 += 1;
         }
     }
-    fundamental_block
-        .iter()
-        .map(|&fundamental| if fundamental { 0 } else { 1 })
-        .sum()
+    (ans1, ans2)
+}
+
+pub fn part1(input: &str) -> u32 {
+    let (ans, _) = solve(input);
+    ans
 }
 
 pub fn part2(input: &str) -> u32 {
-    let mut blocks = parse(input);
-    let n = blocks.len();
-
-    settle_blocks(&mut blocks);
-    let (ground_blocks, top_blocks) = get_top_blocks(&blocks);
-
-    let mut ans = 0;
-    let mut visited = vec![false; n];
-    for i in 0..n {
-        visited[i] = true;
-        for &gi in &ground_blocks {
-            if visited[gi] {
-                continue;
-            }
-            visited[gi] = true;
-            dfs(gi, &top_blocks, &mut visited);
-        }
-        for i in 0..n {
-            ans += if visited[i] { 0 } else { 1 };
-            visited[i] = false;
-        }
-    }
+    let (_, ans) = solve(input);
     ans
 }
 
