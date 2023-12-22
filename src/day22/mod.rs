@@ -54,11 +54,10 @@ fn settle_blocks(blocks: &mut [Block]) {
     }
 }
 
-fn get_touching_blocks(blocks: &[Block]) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
+fn get_bottom_blocks(blocks: &[Block]) -> Vec<Vec<usize>> {
     let n = blocks.len();
 
     let mut bottom_blocks = vec![Vec::new(); n];
-    let mut top_blocks = vec![Vec::new(); n];
 
     for i in 0..n {
         for j in 0..n {
@@ -70,6 +69,23 @@ fn get_touching_blocks(blocks: &[Block]) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
             {
                 bottom_blocks[i].push(j);
             }
+        }
+    }
+
+    bottom_blocks
+}
+
+fn get_top_blocks(blocks: &[Block]) -> (Vec<usize>, Vec<Vec<usize>>) {
+    let n = blocks.len();
+
+    let mut ground_blocks = Vec::new();
+    let mut top_blocks = vec![Vec::new(); n];
+
+    for i in 0..n {
+        if blocks[i].z1 == 1 {
+            ground_blocks.push(i);
+        }
+        for j in 0..n {
             if blocks[i].z2 + 1 == blocks[j].z1
                 && blocks[i].x1 <= blocks[j].x2
                 && blocks[i].x2 >= blocks[j].x1
@@ -81,7 +97,17 @@ fn get_touching_blocks(blocks: &[Block]) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
         }
     }
 
-    (bottom_blocks, top_blocks)
+    (ground_blocks, top_blocks)
+}
+
+fn dfs(i: usize, neighbors: &[Vec<usize>], visited: &mut [bool]) {
+    for &ni in &neighbors[i] {
+        if visited[ni] {
+            continue;
+        }
+        visited[ni] = true;
+        dfs(ni, neighbors, visited);
+    }
 }
 
 pub fn part1(input: &str) -> u32 {
@@ -89,7 +115,7 @@ pub fn part1(input: &str) -> u32 {
     let n = blocks.len();
 
     settle_blocks(&mut blocks);
-    let (bottom_blocks, _) = get_touching_blocks(&blocks);
+    let bottom_blocks = get_bottom_blocks(&blocks);
 
     let mut fundamental_block = vec![false; n];
     for i in 0..n {
@@ -103,7 +129,35 @@ pub fn part1(input: &str) -> u32 {
         .sum()
 }
 
+pub fn part2(input: &str) -> u32 {
+    let mut blocks = parse(input);
+    let n = blocks.len();
+
+    settle_blocks(&mut blocks);
+    let (ground_blocks, top_blocks) = get_top_blocks(&blocks);
+
+    let mut ans = 0;
+    let mut visited = vec![false; n];
+    for i in 0..n {
+        visited[i] = true;
+        for &gi in &ground_blocks {
+            if visited[gi] {
+                continue;
+            }
+            visited[gi] = true;
+            dfs(gi, &top_blocks, &mut visited);
+        }
+        for i in 0..n {
+            ans += if visited[i] { 0 } else { 1 };
+            visited[i] = false;
+        }
+    }
+    ans
+}
+
 crate::samples! {
     (part1_sample, part1, "sample.in", 5),
     (part1_puzzle, part1, "puzzle.in", 407),
+    (part2_sample, part2, "sample.in", 7),
+    (part2_puzzle, part2, "puzzle.in", 59266),
 }
