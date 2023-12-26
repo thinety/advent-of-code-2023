@@ -58,3 +58,5 @@ bench! { day22_part1, aoc2023::day22::part1, "../src/day22/puzzle.in" }
 bench! { day22_part2, aoc2023::day22::part2, "../src/day22/puzzle.in" }
 bench! { day23_part1, aoc2023::day23::part1, "../src/day23/puzzle.in" }
 bench! { day23_part2, aoc2023::day23::part2, "../src/day23/puzzle.in" }
+bench! { day24_part1, aoc2023::day24::part1, "../src/day24/puzzle.in" }
+bench! { day24_part2, aoc2023::day24::part2, "../src/day24/puzzle.in" }
