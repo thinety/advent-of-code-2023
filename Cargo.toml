@@ -14,4 +14,5 @@ bench = false
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 nom = "7"
+num-bigint = "0.4.4"
 num-rational = "0.4.1"

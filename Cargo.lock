@@ -63,6 +63,7 @@ dependencies = [
  "anyhow",
  "clap",
  "nom",
+ "num-bigint",
  "num-rational",
 ]
 

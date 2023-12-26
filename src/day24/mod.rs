@@ -42,7 +42,7 @@ fn parse(input: &str) -> Vec<(Vec3, Vec3)> {
         .collect()
 }
 
-fn check_intersections(input: &[(Vec3, Vec3)], lower: i64, upper: i64) -> u32 {
+fn get_intersections(input: &[(Vec3, Vec3)], lower: i64, upper: i64) -> u32 {
     let mut ans = 0;
 
     let n = input.len();
@@ -81,12 +81,15 @@ fn check_intersections(input: &[(Vec3, Vec3)], lower: i64, upper: i64) -> u32 {
     ans
 }
 
-fn get_equations(input: &[(Vec3, Vec3)]) -> Vec<Vec<i64>> {
+fn part2_solution1(input: &[(Vec3, Vec3)]) -> i64 {
+    use num_rational::Ratio;
+
     let mut mat = Vec::new();
 
     for (i, j) in [(0, 1), (0, 2)] {
         let (pi, vi) = &input[i];
         let (pj, vj) = &input[j];
+
         mat.push(vec![
             0,
             vi.z - vj.z,
@@ -116,14 +119,7 @@ fn get_equations(input: &[(Vec3, Vec3)]) -> Vec<Vec<i64>> {
         ]);
     }
 
-    mat
-}
-
-fn solve_equations(mat: &Vec<Vec<i64>>) -> Vec<i64> {
-    use num_rational::Ratio;
-
     let n = mat.len();
-    assert_eq!(mat[0].len(), n + 1);
 
     let mut mat: Vec<Vec<_>> = mat
         .iter()
@@ -156,25 +152,107 @@ fn solve_equations(mat: &Vec<Vec<i64>>) -> Vec<i64> {
         }
     }
 
-    (0..n)
+    let ans: Vec<_> = (0..n)
         .map(|i| {
             let ans = mat[i][n] / mat[i][i];
             assert!(ans.is_integer());
             i64::try_from(ans.to_integer()).unwrap()
         })
-        .collect()
+        .collect();
+
+    ans[0] + ans[1] + ans[2]
+}
+
+fn part2_solution2(input: &[(Vec3, Vec3)]) -> i64 {
+    use num_bigint::BigInt;
+
+    fn diff(u: &[BigInt; 3], v: &[BigInt; 3]) -> [BigInt; 3] {
+        [&u[0] - &v[0], &u[1] - &v[1], &u[2] - &v[2]]
+    }
+    fn dot(u: &[BigInt; 3], v: &[BigInt; 3]) -> BigInt {
+        &u[0] * &v[0] + &u[1] * &v[1] + &u[2] * &v[2]
+    }
+    fn cross(u: &[BigInt; 3], v: &[BigInt; 3]) -> [BigInt; 3] {
+        [
+            &u[1] * &v[2] - &u[2] * &v[1],
+            &u[2] * &v[0] - &u[0] * &v[2],
+            &u[0] * &v[1] - &u[1] * &v[0],
+        ]
+    }
+    fn coeffs(
+        pi: &[BigInt; 3],
+        vi: &[BigInt; 3],
+        pj: &[BigInt; 3],
+        vj: &[BigInt; 3],
+    ) -> [BigInt; 4] {
+        let [a1, a2, a3] = cross(&diff(vi, vj), &diff(pi, pj));
+        let b = dot(&diff(pi, pj), &diff(&cross(pi, vi), &cross(pj, vj)));
+        [a1, a2, a3, b]
+    }
+
+    fn det(mat: &[[&BigInt; 3]; 3]) -> BigInt {
+        mat[0][0] * mat[1][1] * mat[2][2] - mat[0][0] * mat[1][2] * mat[2][1]
+            + mat[0][1] * mat[1][2] * mat[2][0]
+            - mat[0][1] * mat[1][0] * mat[2][2]
+            + mat[0][2] * mat[1][0] * mat[2][1]
+            - mat[0][2] * mat[1][1] * mat[2][0]
+    }
+
+    let (p0, v0) = &input[0];
+    let (p1, v1) = &input[1];
+    let (p2, v2) = &input[2];
+
+    let p0 = [BigInt::from(p0.x), BigInt::from(p0.y), BigInt::from(p0.z)];
+    let v0 = [BigInt::from(v0.x), BigInt::from(v0.y), BigInt::from(v0.z)];
+    let p1 = [BigInt::from(p1.x), BigInt::from(p1.y), BigInt::from(p1.z)];
+    let v1 = [BigInt::from(v1.x), BigInt::from(v1.y), BigInt::from(v1.z)];
+    let p2 = [BigInt::from(p2.x), BigInt::from(p2.y), BigInt::from(p2.z)];
+    let v2 = [BigInt::from(v2.x), BigInt::from(v2.y), BigInt::from(v2.z)];
+
+    let [a11, a12, a13, b1] = coeffs(&p0, &v0, &p1, &v1);
+    let [a21, a22, a23, b2] = coeffs(&p1, &v1, &p2, &v2);
+    let [a31, a32, a33, b3] = coeffs(&p2, &v2, &p0, &v0);
+
+    let a = det(&[[&b1, &a12, &a13], [&b2, &a22, &a23], [&b3, &a32, &a33]]);
+    let b = det(&[[&a11, &b1, &a13], [&a21, &b2, &a23], [&a31, &b3, &a33]]);
+    let c = det(&[[&a11, &a12, &b1], [&a21, &a22, &b2], [&a31, &a32, &b3]]);
+    let d = det(&[[&a11, &a12, &a13], [&a21, &a22, &a23], [&a31, &a32, &a33]]);
+
+    assert_eq!(&a % &d, BigInt::from(0));
+    assert_eq!(&b % &d, BigInt::from(0));
+    assert_eq!(&c % &d, BigInt::from(0));
+
+    let ans: Vec<_> = [&a / &d, &b / &d, &c / &d]
+        .iter()
+        .map(|x| {
+            let (sign, digits) = x.to_u64_digits();
+            assert_eq!(digits.len(), 1);
+            let sign = match sign {
+                num_bigint::Sign::Minus => -1,
+                num_bigint::Sign::NoSign => 0,
+                num_bigint::Sign::Plus => 1,
+            };
+            sign * (digits[0] as i64)
+        })
+        .collect();
+
+    ans[0] + ans[1] + ans[2]
 }
 
 pub fn part1(input: &str) -> u32 {
     let input = parse(input);
-    check_intersections(&input, 200000000000000, 400000000000000)
+
+    get_intersections(&input, 200000000000000, 400000000000000)
 }
 
 pub fn part2(input: &str) -> i64 {
     let input = parse(input);
-    let equations = get_equations(&input);
-    let ans = solve_equations(&equations);
-    ans[0] + ans[1] + ans[2]
+
+    let ans1 = part2_solution1(&input);
+    let ans2 = part2_solution2(&input);
+    assert_eq!(ans1, ans2);
+
+    ans1
 }
 
 crate::samples! {
