@@ -15,6 +15,32 @@ enum Direction {
     West = 3,
 }
 
+struct State {
+    i: usize,
+    j: usize,
+    d: Direction,
+    k: usize,
+    c: u32,
+}
+
+impl Eq for State {}
+impl PartialEq for State {
+    fn eq(&self, other: &Self) -> bool {
+        self.c == other.c
+    }
+}
+
+impl Ord for State {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other.c.cmp(&self.c)
+    }
+}
+impl PartialOrd for State {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
     let input = parse(input);
 
@@ -24,134 +50,146 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
     let mut priority_queue = BinaryHeap::new();
     let mut visited = vec![vec![vec![vec![false; max_k]; 4]; m]; n];
 
-    priority_queue.push((-(input[0][1] as i32), 0, 1, Direction::East, 0));
-    priority_queue.push((-(input[1][0] as i32), 1, 0, Direction::South, 0));
+    priority_queue.push(State {
+        i: 0,
+        j: 1,
+        d: Direction::East,
+        k: 0,
+        c: input[0][1],
+    });
+    priority_queue.push(State {
+        i: 1,
+        j: 0,
+        d: Direction::South,
+        k: 0,
+        c: input[1][0],
+    });
 
-    while let Some((c, i, j, d, k)) = priority_queue.pop() {
+    while let Some(State { i, j, d, k, c }) = priority_queue.pop() {
         if visited[i][j][d as usize][k] {
             continue;
         }
         visited[i][j][d as usize][k] = true;
 
         if i == n - 1 && j == m - 1 && k >= min_k - 1 {
-            return -c as u32;
+            return c;
         }
 
         match d {
             Direction::North => {
                 if k < max_k - 1 && i > 0 {
-                    priority_queue.push((
-                        c - (input[i - 1][j] as i32),
-                        i - 1,
-                        j,
-                        Direction::North,
-                        k + 1,
-                    ));
+                    priority_queue.push(State {
+                        i: i - 1,
+                        j: j,
+                        d: Direction::North,
+                        k: k + 1,
+                        c: c + input[i - 1][j],
+                    });
                 }
                 if k >= min_k - 1 && j > 0 {
-                    priority_queue.push((
-                        c - (input[i][j - 1] as i32),
-                        i,
-                        j - 1,
-                        Direction::West,
-                        0,
-                    ));
+                    priority_queue.push(State {
+                        i: i,
+                        j: j - 1,
+                        d: Direction::West,
+                        k: 0,
+                        c: c + input[i][j - 1],
+                    });
                 }
                 if k >= min_k - 1 && j < m - 1 {
-                    priority_queue.push((
-                        c - (input[i][j + 1] as i32),
-                        i,
-                        j + 1,
-                        Direction::East,
-                        0,
-                    ));
+                    priority_queue.push(State {
+                        i: i,
+                        j: j + 1,
+                        d: Direction::East,
+                        k: 0,
+                        c: c + input[i][j + 1],
+                    });
                 }
             }
             Direction::South => {
                 if k < max_k - 1 && i < n - 1 {
-                    priority_queue.push((
-                        c - (input[i + 1][j] as i32),
-                        i + 1,
-                        j,
-                        Direction::South,
-                        k + 1,
-                    ));
+                    priority_queue.push(State {
+                        i: i + 1,
+                        j: j,
+                        d: Direction::South,
+                        k: k + 1,
+                        c: c + input[i + 1][j],
+                    });
                 }
                 if k >= min_k - 1 && j > 0 {
-                    priority_queue.push((
-                        c - (input[i][j - 1] as i32),
-                        i,
-                        j - 1,
-                        Direction::West,
-                        0,
-                    ));
+                    priority_queue.push(State {
+                        i: i,
+                        j: j - 1,
+                        d: Direction::West,
+                        k: 0,
+                        c: c + input[i][j - 1],
+                    });
                 }
                 if k >= min_k - 1 && j < m - 1 {
-                    priority_queue.push((
-                        c - (input[i][j + 1] as i32),
-                        i,
-                        j + 1,
-                        Direction::East,
-                        0,
-                    ));
+                    priority_queue.push(State {
+                        i: i,
+                        j: j + 1,
+                        d: Direction::East,
+                        k: 0,
+                        c: c + input[i][j + 1],
+                    });
                 }
             }
             Direction::East => {
                 if k < max_k - 1 && j < m - 1 {
-                    priority_queue.push((
-                        c - (input[i][j + 1] as i32),
-                        i,
-                        j + 1,
-                        Direction::East,
-                        k + 1,
-                    ));
+                    priority_queue.push(State {
+                        i: i,
+                        j: j + 1,
+                        d: Direction::East,
+                        k: k + 1,
+                        c: c + input[i][j + 1],
+                    });
                 }
                 if k >= min_k - 1 && i > 0 {
-                    priority_queue.push((
-                        c - (input[i - 1][j] as i32),
-                        i - 1,
-                        j,
-                        Direction::North,
-                        0,
-                    ));
+                    priority_queue.push(State {
+                        i: i - 1,
+                        j: j,
+                        d: Direction::North,
+                        k: 0,
+                        c: c + input[i - 1][j],
+                    });
                 }
                 if k >= min_k - 1 && i < n - 1 {
-                    priority_queue.push((
-                        c - (input[i + 1][j] as i32),
-                        i + 1,
-                        j,
-                        Direction::South,
-                        0,
-                    ));
+                    priority_queue.push(State {
+                        i: i + 1,
+                        j: j,
+                        d: Direction::South,
+                        k: 0,
+                        c: c + input[i + 1][j],
+                    });
                 }
             }
             Direction::West => {
                 if k < max_k - 1 && j > 0 {
-                    priority_queue.push((
-                        c - (input[i][j - 1] as i32),
-                        i,
-                        j - 1,
-                        Direction::West,
-                        k + 1,
-                    ));
+                    priority_queue.push(State {
+                        i: i,
+                        j: j - 1,
+                        d: Direction::West,
+                        k: k + 1,
+                        c: c + input[i][j - 1],
+                    });
                 }
                 if k >= min_k - 1 && i > 0 {
-                    priority_queue.push((
-                        c - (input[i - 1][j] as i32),
-                        i - 1,
-                        j,
-                        Direction::North,
-                        0,
-                    ));
+                    priority_queue.push(State {
+                        i: i - 1,
+                        j: j,
+                        d: Direction::North,
+                        k: 0,
+                        c: c + input[i - 1][j],
+                    });
                 }
                 if k >= min_k - 1 && i < n - 1 {
-                    priority_queue.push((
-                        c - (input[i + 1][j] as i32),
-                        i + 1,
-                        j,
-                        Direction::South,
-                        0,
-                    ));
+                    priority_queue.push(State {
+                        i: i + 1,
+                        j: j,
+                        d: Direction::South,
+                        k: 0,
+                        c: c + input[i + 1][j],
+                    });
                 }
             }
         }
