@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 struct Block {
     x1: u32,
     x2: u32,
@@ -33,85 +35,179 @@ fn parse(input: &str) -> Vec<Block> {
         .collect()
 }
 
-fn settle_blocks(blocks: &mut [Block]) {
-    blocks.sort_by_key(|block| block.z1);
-
-    for i in 0..blocks.len() {
-        let mut new_z1 = 1;
-        for j in 0..i {
-            if blocks[i].x1 <= blocks[j].x2
-                && blocks[i].x2 >= blocks[j].x1
-                && blocks[i].y1 <= blocks[j].y2
-                && blocks[i].y2 >= blocks[j].y1
-            {
-                new_z1 = new_z1.max(blocks[j].z2 + 1);
-            }
-        }
-
-        let diff = blocks[i].z1 - new_z1;
-        blocks[i].z1 -= diff;
-        blocks[i].z2 -= diff;
-    }
-}
-
 // last node is ground
-fn get_top_blocks(blocks: &[Block]) -> Vec<Vec<usize>> {
+fn get_connections(blocks: &mut [Block]) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
     let n = blocks.len();
 
-    let mut top_blocks = vec![Vec::new(); n + 1];
+    let (mut max_x, mut max_y) = (0, 0);
+    for block in blocks.iter_mut() {
+        (block.x1, block.x2) = (block.x1.min(block.x2), block.x1.max(block.x2));
+        (block.y1, block.y2) = (block.y1.min(block.y2), block.y1.max(block.y2));
+        (block.z1, block.z2) = (block.z1.min(block.z2), block.z1.max(block.z2));
+        (max_x, max_y) = (max_x.max(block.x2 as usize), max_y.max(block.y2 as usize));
+    }
+    blocks.sort_by_key(|block| block.z1);
 
+    let mut top = vec![Vec::new(); n + 1];
+    let mut bot = vec![Vec::new(); n + 1];
+
+    let mut heights = vec![vec![1; max_y + 1]; max_x + 1];
+    let mut indices = vec![vec![n; max_y + 1]; max_x + 1];
     for i in 0..n {
-        if blocks[i].z1 == 1 {
-            top_blocks[n].push(i);
-        }
-        for j in 0..n {
-            if blocks[i].z2 + 1 == blocks[j].z1
-                && blocks[i].x1 <= blocks[j].x2
-                && blocks[i].x2 >= blocks[j].x1
-                && blocks[i].y1 <= blocks[j].y2
-                && blocks[i].y2 >= blocks[j].y1
-            {
-                top_blocks[i].push(j);
+        let mut z1 = 0;
+        for x in blocks[i].x1..=blocks[i].x2 {
+            for y in blocks[i].y1..=blocks[i].y2 {
+                z1 = z1.max(heights[x as usize][y as usize]);
             }
+        }
+        let z2 = blocks[i].z2 - blocks[i].z1 + z1;
+
+        let mut set = HashSet::new();
+        for x in blocks[i].x1..=blocks[i].x2 {
+            for y in blocks[i].y1..=blocks[i].y2 {
+                if heights[x as usize][y as usize] == z1 {
+                    set.insert(indices[x as usize][y as usize]);
+                }
+                heights[x as usize][y as usize] = z2 + 1;
+                indices[x as usize][y as usize] = i;
+            }
+        }
+        for &j in &set {
+            top[j].push(i);
+            bot[i].push(j);
         }
     }
 
-    top_blocks
+    (top, bot)
 }
 
-fn dfs(i: usize, neighbors: &[Vec<usize>], visited: &mut [bool]) {
-    for &ni in &neighbors[i] {
+fn lca(mut u: usize, mut v: usize, depth: &[u32], up: &[Vec<usize>]) -> usize {
+    let l = up[0].len();
+
+    if depth[u] > depth[v] {
+        (u, v) = (v, u);
+    }
+
+    let diff = depth[v] - depth[u];
+    for i in (0..l).rev() {
+        if (diff & (1 << i)) != 0 {
+            v = up[v][i];
+        }
+    }
+
+    if v == u {
+        return u;
+    }
+
+    for i in (0..l).rev() {
+        if up[u][i] != up[v][i] {
+            u = up[u][i];
+            v = up[v][i];
+        }
+    }
+
+    up[u][0]
+}
+
+fn make_tree(
+    i: usize,
+    top: &[Vec<usize>],
+    bot: &[Vec<usize>],
+    visited: &mut [bool],
+    children: &mut [Vec<usize>],
+    depth: &mut [u32],
+    up: &mut [Vec<usize>],
+) {
+    let l = up[0].len();
+
+    for &ni in top[i].iter() {
+        if visited[ni] {
+            continue;
+        }
+        if bot[ni].iter().any(|&j| !visited[j]) {
+            continue;
+        }
+
+        visited[ni] = true;
+
+        let mut parent = bot[ni][0];
+        for &j in bot[ni][1..].iter() {
+            parent = lca(parent, j, depth, up);
+        }
+
+        children[parent].push(ni);
+        depth[ni] = depth[parent] + 1;
+        up[ni][0] = parent;
+        for i in 1..l {
+            up[ni][i] = up[up[ni][i - 1]][i - 1];
+        }
+
+        make_tree(ni, top, bot, visited, children, depth, up);
+    }
+}
+
+fn dfs(i: usize, children: &[Vec<usize>], visited: &mut [bool], subtree: &mut [u32]) {
+    for &ni in children[i].iter() {
         if visited[ni] {
             continue;
         }
         visited[ni] = true;
-        dfs(ni, neighbors, visited);
+        subtree[ni] = 1;
+        dfs(ni, children, visited, subtree);
+        subtree[i] += subtree[ni];
     }
 }
 
 fn solve(input: &str) -> (u32, u32) {
     let mut blocks = parse(input);
+    let (top, bot) = get_connections(&mut blocks);
+
     let n = blocks.len();
 
-    settle_blocks(&mut blocks);
-    let top_blocks = get_top_blocks(&blocks);
+    // if V is the number of nodes in the tree, we have
+    // L = ceil(log2(V)) = floor(log2(V-1))+1
+    // each block is one node, plus one more for the ground, so V = n+1
+    let l = (n.ilog2() + 1) as usize;
+
+    let mut children = vec![Vec::new(); n + 1];
+    {
+        let mut visited = vec![false; n + 1];
+        let mut depth = vec![0; n + 1];
+        let mut up = vec![vec![0; l]; n + 1];
+
+        visited[n] = true;
+        depth[n] = 0;
+        for i in 0..l {
+            up[n][i] = n;
+        }
+
+        make_tree(
+            n,
+            &top,
+            &bot,
+            &mut visited,
+            &mut children,
+            &mut depth,
+            &mut up,
+        );
+    }
+
+    let mut subtree = vec![0; n + 1];
+    {
+        let mut visited = vec![false; n + 1];
+
+        visited[n] = true;
+        subtree[n] = 1;
+
+        dfs(n, &children, &mut visited, &mut subtree);
+    }
 
     let (mut ans1, mut ans2) = (0, 0);
     for i in 0..n {
-        let mut visited = vec![false; n+1];
-        visited[i] = true;
-        dfs(n, &top_blocks, &mut visited);
-
-        let mut is_articulation = false;
-        for i in 0..n {
-            if !visited[i] {
-                is_articulation = true;
-                ans2 += 1;
-            }
-        }
-        if !is_articulation {
+        if subtree[i] == 1 {
             ans1 += 1;
         }
+        ans2 += subtree[i] - 1;
     }
     (ans1, ans2)
 }
