@@ -1,8 +1,8 @@
 use nom::bytes::complete::{tag, take_until1};
-use nom::character::complete::digit1;
-use nom::combinator::{map, map_res};
+use nom::character::complete::{digit1, multispace0};
+use nom::combinator::{all_consuming, map, map_res};
 use nom::multi::separated_list1;
-use nom::sequence::separated_pair;
+use nom::sequence::{separated_pair, terminated};
 use nom::IResult;
 
 pub(super) fn parse(input: &str) -> Vec<(Vec<u8>, Vec<usize>)> {
@@ -22,7 +22,6 @@ pub(super) fn parse(input: &str) -> Vec<(Vec<u8>, Vec<usize>)> {
         separated_list1(tag("\n"), line)(input)
     }
 
-    let (rest, output) = parse(input.trim_end()).unwrap();
-    assert!(rest.is_empty());
+    let (_, output) = all_consuming(terminated(parse, multispace0))(input).unwrap();
     output
 }

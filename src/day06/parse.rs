@@ -1,11 +1,9 @@
-use nom::{
-    bytes::complete::tag,
-    character::complete::{digit1, space1},
-    combinator::{map, map_res},
-    multi::separated_list1,
-    sequence::{pair, preceded, separated_pair},
-    IResult,
-};
+use nom::bytes::complete::tag;
+use nom::character::complete::{digit1, multispace0, space1};
+use nom::combinator::{all_consuming, map, map_res};
+use nom::multi::separated_list1;
+use nom::sequence::{pair, preceded, separated_pair, terminated};
+use nom::IResult;
 
 pub(super) fn parse_part1(input: &str) -> Vec<(u64, u64)> {
     fn number(input: &str) -> IResult<&str, u64> {
@@ -31,8 +29,7 @@ pub(super) fn parse_part1(input: &str) -> Vec<(u64, u64)> {
         )(input)
     }
 
-    let (input, output) = parse(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, output) = all_consuming(terminated(parse, multispace0))(input).unwrap();
     output
 }
 
@@ -50,7 +47,6 @@ pub(super) fn parse_part2(input: &str) -> (u64, u64) {
         )(input)
     }
 
-    let (input, output) = parse(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, output) = all_consuming(terminated(parse, multispace0))(input).unwrap();
     output
 }

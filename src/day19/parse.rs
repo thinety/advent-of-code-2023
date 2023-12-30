@@ -1,12 +1,12 @@
+use super::*;
+
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{alpha1, digit1};
-use nom::combinator::{map, map_res, value};
+use nom::character::complete::{alpha1, digit1, multispace0};
+use nom::combinator::{all_consuming, map, map_res, opt, value};
 use nom::multi::separated_list1;
-use nom::sequence::{delimited, pair, preceded, separated_pair, tuple};
+use nom::sequence::{delimited, pair, preceded, separated_pair, terminated, tuple};
 use nom::IResult;
-
-use super::*;
 
 pub(super) fn parse(input: &str) -> (Workflows, Vec<Part>) {
     fn number(input: &str) -> IResult<&str, u32> {
@@ -40,11 +40,14 @@ pub(super) fn parse(input: &str) -> (Workflows, Vec<Part>) {
         map(
             delimited(
                 tag("{"),
-                separated_pair(separated_list1(tag(","), rule), tag(","), alpha1),
+                pair(
+                    opt(terminated(separated_list1(tag(","), rule), tag(","))),
+                    alpha1,
+                ),
                 tag("}"),
             ),
             |(rules, default_workflow)| Workflow {
-                rules,
+                rules: rules.unwrap_or_default(),
                 default_workflow: default_workflow.to_string(),
             },
         )(input)
@@ -81,7 +84,6 @@ pub(super) fn parse(input: &str) -> (Workflows, Vec<Part>) {
         separated_pair(workflows, tag("\n\n"), separated_list1(tag("\n"), part))(input)
     }
 
-    let (input, output) = parse(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, output) = all_consuming(terminated(parse, multispace0))(input).unwrap();
     output
 }

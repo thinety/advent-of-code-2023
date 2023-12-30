@@ -1,12 +1,12 @@
+use super::*;
+
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{alpha1, digit1};
-use nom::combinator::{map, map_res, value};
+use nom::character::complete::{alpha1, digit1, multispace0};
+use nom::combinator::{map, map_res, value, all_consuming};
 use nom::multi::separated_list1;
-use nom::sequence::{pair, preceded};
+use nom::sequence::{pair, preceded, terminated};
 use nom::IResult;
-
-use super::*;
 
 pub(super) fn parse(input: &str) -> Vec<Step> {
     fn number(input: &str) -> IResult<&str, u32> {
@@ -28,7 +28,6 @@ pub(super) fn parse(input: &str) -> Vec<Step> {
         separated_list1(tag(","), step)(input)
     }
 
-    let (input, cards) = steps(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, cards) = all_consuming(terminated(steps, multispace0))(input).unwrap();
     cards
 }

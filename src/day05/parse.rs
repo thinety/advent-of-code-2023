@@ -1,11 +1,9 @@
-use nom::{
-    bytes::complete::{tag, take_until1},
-    character::complete::digit1,
-    combinator::{map, map_res},
-    multi::separated_list1,
-    sequence::{preceded, separated_pair, terminated, tuple},
-    IResult,
-};
+use nom::bytes::complete::{tag, take_until1};
+use nom::character::complete::{digit1, multispace0};
+use nom::combinator::{all_consuming, map, map_res};
+use nom::multi::separated_list1;
+use nom::sequence::{preceded, separated_pair, terminated, tuple};
+use nom::IResult;
 
 pub(super) fn parse_part1(input: &str) -> (Vec<u64>, Vec<Vec<(u64, u64, u64)>>) {
     fn number(input: &str) -> IResult<&str, u64> {
@@ -33,8 +31,7 @@ pub(super) fn parse_part1(input: &str) -> (Vec<u64>, Vec<Vec<(u64, u64, u64)>>) 
         separated_pair(seeds, tag("\n\n"), mappings)(input)
     }
 
-    let (input, (seeds, mappings)) = parse(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, (seeds, mappings)) = all_consuming(terminated(parse, multispace0))(input).unwrap();
     (seeds, mappings)
 }
 
@@ -70,7 +67,6 @@ pub(super) fn parse_part2(input: &str) -> (Vec<(u64, u64)>, Vec<Vec<(u64, u64, u
         separated_pair(seeds, tag("\n\n"), mappings)(input)
     }
 
-    let (input, (seeds, mappings)) = parse(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, (seeds, mappings)) = all_consuming(terminated(parse, multispace0))(input).unwrap();
     (seeds, mappings)
 }

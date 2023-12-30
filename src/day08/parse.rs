@@ -4,10 +4,10 @@ use std::collections::HashMap;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::alphanumeric1;
-use nom::combinator::{map, value};
+use nom::character::complete::{alphanumeric1, multispace0};
+use nom::combinator::{map, value, all_consuming};
 use nom::multi::{many1, separated_list1};
-use nom::sequence::{delimited, separated_pair};
+use nom::sequence::{delimited, separated_pair, terminated};
 use nom::IResult;
 
 pub(super) fn parse(input: &str) -> (Vec<Direction>, HashMap<String, Node>) {
@@ -53,7 +53,6 @@ pub(super) fn parse(input: &str) -> (Vec<Direction>, HashMap<String, Node>) {
         separated_pair(directions, tag("\n\n"), nodes)(input)
     }
 
-    let (input, (directions, nodes)) = parse(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, (directions, nodes)) = all_consuming(terminated(parse, multispace0))(input).unwrap();
     (directions, nodes)
 }

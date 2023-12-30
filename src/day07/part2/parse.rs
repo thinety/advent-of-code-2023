@@ -2,10 +2,10 @@ use super::*;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::digit1;
-use nom::combinator::{map, map_res, value};
+use nom::character::complete::{digit1, multispace0};
+use nom::combinator::{all_consuming, map, map_res, value};
 use nom::multi::separated_list1;
-use nom::sequence::tuple;
+use nom::sequence::{terminated, tuple};
 use nom::IResult;
 
 pub(super) fn parse(input: &str) -> Vec<Hand> {
@@ -39,7 +39,6 @@ pub(super) fn parse(input: &str) -> Vec<Hand> {
         separated_list1(tag("\n"), hand)(input)
     }
 
-    let (input, hands) = hands(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, hands) = all_consuming(terminated(hands, multispace0))(input).unwrap();
     hands
 }

@@ -1,10 +1,10 @@
 use super::*;
 
 use nom::bytes::complete::tag;
-use nom::character::complete::{digit1, space1};
-use nom::combinator::{map, map_res};
+use nom::character::complete::{digit1, multispace0, space1};
+use nom::combinator::{all_consuming, map, map_res};
 use nom::multi::separated_list1;
-use nom::sequence::{delimited, pair, preceded, separated_pair};
+use nom::sequence::{delimited, pair, preceded, separated_pair, terminated};
 use nom::IResult;
 
 pub(super) fn parse(input: &str) -> Vec<Card> {
@@ -32,7 +32,6 @@ pub(super) fn parse(input: &str) -> Vec<Card> {
         separated_list1(tag("\n"), card)(input)
     }
 
-    let (input, cards) = cards(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, cards) = all_consuming(terminated(cards, multispace0))(input).unwrap();
     cards
 }

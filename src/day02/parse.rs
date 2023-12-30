@@ -2,10 +2,10 @@ use super::*;
 
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::digit1;
-use nom::combinator::{map, map_res, value};
+use nom::character::complete::{digit1, multispace0};
+use nom::combinator::{map, map_res, value, all_consuming};
 use nom::multi::separated_list1;
-use nom::sequence::{delimited, pair, separated_pair};
+use nom::sequence::{delimited, pair, separated_pair, terminated};
 use nom::IResult;
 
 pub(super) fn parse(input: &str) -> Vec<Game> {
@@ -57,7 +57,6 @@ pub(super) fn parse(input: &str) -> Vec<Game> {
         separated_list1(tag("\n"), game)(input)
     }
 
-    let (input, games) = games(input.trim_end()).unwrap();
-    assert!(input.is_empty());
+    let (_, games) = all_consuming(terminated(games, multispace0))(input).unwrap();
     games
 }
