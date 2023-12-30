@@ -81,6 +81,30 @@ fn get_intersections(input: &[(Vec3, Vec3)], lower: i64, upper: i64) -> u32 {
     ans
 }
 
+// Let p0, v0 be the initial position and velocity of the rock, and pi, vi
+// be the initial position and velocity of the i-th hailstone.
+//
+// The rock is eventually going to hit every hailstone, so we know that for every i,
+// p0 + v0 * ti = pi + vi * ti, for some ti. Rearranging, we get:
+//
+// (p0 - pi) = - ti * (v0 - vi)
+//
+// With three such equations, we already have nine equations in nine unknowns
+// (p0x, p0y, p0z, v0x, v0y, v0z, t1, t2, t3), so the system is, in theory, solvable.
+//
+// But we can be smarter about the equations. Note that (p0-pi) = -ti*(v0-vi) simply
+// means that (p0-pi) and (v0-vi) are colinear, which is equivalent to
+// (p0-pi) x (v0-vi) = p0 x v0 - pi x v0 - p0 x vi + pi x vi = 0, where x is the
+// cross product. The problem is that now we have a non-linear term p0 x v0, but
+// it can the cancelled by subtracting two such equations:
+//
+// (pi - pj) x v0 + p0 x (vi - vj) = pi x vi - pj x vj
+//
+// For each pair (i, j) of hailstones, we can get one such equation. With two pairs
+// (three hailstones in total) we have six linear equations in six unknowns.
+//
+// This is the approach taken here, and the implementation uses integer gaussian
+// elimination, with an integer ratio wrapper type.
 fn part2_solution1(input: &[(Vec3, Vec3)]) -> i64 {
     use num_rational::Ratio;
 
@@ -163,6 +187,21 @@ fn part2_solution1(input: &[(Vec3, Vec3)]) -> i64 {
     ans[0] + ans[1] + ans[2]
 }
 
+// But we can be even smarter about the previous equations. Of interest to us are
+// only p0x, p0y and p0z, so we can do:
+//
+// (pi - pj) . ((pi - pj) x v0) + (pi - pj) . (p0 x (vi - vj)) = (pi - pj) . (pi x vi - pj x vj)
+// v0 . (pi - pj) x (pi - pj) + p0 . (vi - vj) x (pi - pj) = (pi - pj) . (pi x vi - pj x vj)
+// p0 . (vi - vj) x (pi - pj) = (pi - pj) . (pi x vi - pj x vj)
+//
+// Where . is the dot product. Now, for each pair (i, j) of hailstones, we have
+// one linear equation in three unknowns. With three pairs (three hailstones in total)
+// we get tree linear equations in three unknowns, which can be solved using just
+// Cramer's rule.
+//
+// Taking into account that |pix| ≈ |piy| ≈ |piz| ≈ 1e15 and |vix| ≈ |viy| ≈ |viz| ≈ 1e2,
+// the determinant in the numerator of Cramer's rule can use over 200 bits in memory,
+// so as an implementation detail we need a big integer implementation.
 fn part2_solution2(input: &[(Vec3, Vec3)]) -> i64 {
     use num_bigint::BigInt;
 
