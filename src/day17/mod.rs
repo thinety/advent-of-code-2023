@@ -18,8 +18,8 @@ enum Direction {
 struct State {
     i: usize,
     j: usize,
-    d: Direction,
     k: usize,
+    d: Direction,
     c: u32,
 }
 
@@ -42,34 +42,37 @@ impl PartialOrd for State {
 }
 
 fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
+    assert!(min_k <= max_k);
+    assert!(max_k * 4 <= 64);
+
     let input = parse(input);
 
     let n = input.len();
     let m = input[0].len();
 
     let mut priority_queue = BinaryHeap::new();
-    let mut visited = vec![vec![vec![vec![false; max_k]; 4]; m]; n];
+    let mut visited = vec![0u64; n*m];
 
     priority_queue.push(State {
         i: 0,
         j: 1,
-        d: Direction::East,
         k: 0,
+        d: Direction::East,
         c: input[0][1],
     });
     priority_queue.push(State {
         i: 1,
         j: 0,
-        d: Direction::South,
         k: 0,
+        d: Direction::South,
         c: input[1][0],
     });
 
     while let Some(State { i, j, d, k, c }) = priority_queue.pop() {
-        if visited[i][j][d as usize][k] {
+        if (visited[i*m+j] & 1<<(k * 4 + (d as usize))) != 0 {
             continue;
         }
-        visited[i][j][d as usize][k] = true;
+        visited[i*m+j] |= 1<<(k*4 + (d as usize));
 
         if i == n - 1 && j == m - 1 && k >= min_k - 1 {
             return c;
@@ -81,8 +84,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i - 1,
                         j: j,
-                        d: Direction::North,
                         k: k + 1,
+                        d: Direction::North,
                         c: c + input[i - 1][j],
                     });
                 }
@@ -90,8 +93,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i,
                         j: j - 1,
-                        d: Direction::West,
                         k: 0,
+                        d: Direction::West,
                         c: c + input[i][j - 1],
                     });
                 }
@@ -99,8 +102,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i,
                         j: j + 1,
-                        d: Direction::East,
                         k: 0,
+                        d: Direction::East,
                         c: c + input[i][j + 1],
                     });
                 }
@@ -110,8 +113,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i + 1,
                         j: j,
-                        d: Direction::South,
                         k: k + 1,
+                        d: Direction::South,
                         c: c + input[i + 1][j],
                     });
                 }
@@ -119,8 +122,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i,
                         j: j - 1,
-                        d: Direction::West,
                         k: 0,
+                        d: Direction::West,
                         c: c + input[i][j - 1],
                     });
                 }
@@ -128,8 +131,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i,
                         j: j + 1,
-                        d: Direction::East,
                         k: 0,
+                        d: Direction::East,
                         c: c + input[i][j + 1],
                     });
                 }
@@ -139,8 +142,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i,
                         j: j + 1,
-                        d: Direction::East,
                         k: k + 1,
+                        d: Direction::East,
                         c: c + input[i][j + 1],
                     });
                 }
@@ -148,8 +151,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i - 1,
                         j: j,
-                        d: Direction::North,
                         k: 0,
+                        d: Direction::North,
                         c: c + input[i - 1][j],
                     });
                 }
@@ -157,8 +160,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i + 1,
                         j: j,
-                        d: Direction::South,
                         k: 0,
+                        d: Direction::South,
                         c: c + input[i + 1][j],
                     });
                 }
@@ -168,8 +171,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i,
                         j: j - 1,
-                        d: Direction::West,
                         k: k + 1,
+                        d: Direction::West,
                         c: c + input[i][j - 1],
                     });
                 }
@@ -177,8 +180,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i - 1,
                         j: j,
-                        d: Direction::North,
                         k: 0,
+                        d: Direction::North,
                         c: c + input[i - 1][j],
                     });
                 }
@@ -186,8 +189,8 @@ fn solve(input: &str, min_k: usize, max_k: usize) -> u32 {
                     priority_queue.push(State {
                         i: i + 1,
                         j: j,
-                        d: Direction::South,
                         k: 0,
+                        d: Direction::South,
                         c: c + input[i + 1][j],
                     });
                 }
