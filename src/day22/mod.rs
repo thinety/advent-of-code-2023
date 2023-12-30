@@ -48,8 +48,8 @@ fn get_connections(blocks: &mut [Block]) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
     }
     blocks.sort_by_key(|block| block.z1);
 
-    let mut top = vec![Vec::new(); n + 1];
     let mut bot = vec![Vec::new(); n + 1];
+    let mut top = vec![Vec::new(); n + 1];
 
     let mut heights = vec![vec![1; max_y + 1]; max_x + 1];
     let mut indices = vec![vec![n; max_y + 1]; max_x + 1];
@@ -72,13 +72,13 @@ fn get_connections(blocks: &mut [Block]) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
                 indices[x as usize][y as usize] = i;
             }
         }
+        bot[i].extend(&set);
         for &j in &set {
             top[j].push(i);
-            bot[i].push(j);
         }
     }
 
-    (top, bot)
+    (bot, top)
 }
 
 fn lca(mut u: usize, mut v: usize, depth: &[u32], up: &[Vec<usize>]) -> usize {
@@ -153,14 +153,39 @@ fn dfs(i: usize, children: &[Vec<usize>], visited: &mut [bool], subtree: &mut [u
         }
         visited[ni] = true;
         subtree[ni] = 1;
+
         dfs(ni, children, visited, subtree);
+
         subtree[i] += subtree[ni];
     }
 }
 
-fn solve(input: &str) -> (u32, u32) {
+pub fn part1(input: &str) -> u32 {
     let mut blocks = parse(input);
-    let (top, bot) = get_connections(&mut blocks);
+    let (bot, _) = get_connections(&mut blocks);
+
+    let n = blocks.len();
+
+    let mut safe = vec![true; n + 1];
+    for i in 0..n {
+        if bot[i].len() == 1 {
+            let pi = bot[i][0];
+            safe[pi] = false;
+        }
+    }
+
+    let mut ans = 0;
+    for i in 0..n {
+        if safe[i] {
+            ans += 1;
+        }
+    }
+    ans
+}
+
+pub fn part2(input: &str) -> u32 {
+    let mut blocks = parse(input);
+    let (bot, top) = get_connections(&mut blocks);
 
     let n = blocks.len();
 
@@ -202,23 +227,10 @@ fn solve(input: &str) -> (u32, u32) {
         dfs(n, &children, &mut visited, &mut subtree);
     }
 
-    let (mut ans1, mut ans2) = (0, 0);
+    let mut ans = 0;
     for i in 0..n {
-        if subtree[i] == 1 {
-            ans1 += 1;
-        }
-        ans2 += subtree[i] - 1;
+        ans += subtree[i] - 1;
     }
-    (ans1, ans2)
-}
-
-pub fn part1(input: &str) -> u32 {
-    let (ans, _) = solve(input);
-    ans
-}
-
-pub fn part2(input: &str) -> u32 {
-    let (_, ans) = solve(input);
     ans
 }
 
