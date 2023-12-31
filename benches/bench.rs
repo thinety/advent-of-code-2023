@@ -60,3 +60,4 @@ bench! { day23_part1, aoc2023::day23::part1, "../src/day23/puzzle.in" }
 bench! { day23_part2, aoc2023::day23::part2, "../src/day23/puzzle.in" }
 bench! { day24_part1, aoc2023::day24::part1, "../src/day24/puzzle.in" }
 bench! { day24_part2, aoc2023::day24::part2, "../src/day24/puzzle.in" }
+bench! { day25_part1, aoc2023::day25::part1, "../src/day25/puzzle.in" }
