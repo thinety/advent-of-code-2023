@@ -24,19 +24,22 @@ fn neighbor_count((i, j): (usize, usize), grid: &Vec<Vec<u8>>) -> u32 {
 }
 
 // 0 is start, 1 is end
-fn make_graph(grid: &Vec<Vec<u8>>) -> Vec<Vec<(usize, u32)>> {
+fn make_graph(grid: &Vec<Vec<u8>>) -> (Vec<Vec<(usize, u32)>>, Vec<(usize, usize)>) {
     let (n, m) = (grid.len(), grid[0].len());
 
     let mut relevant = Vec::new();
     let mut index = vec![vec![None; m]; n];
+    let mut position = Vec::new();
     let mut neighbors = Vec::new();
 
     relevant.push((0, 1));
     index[0][1] = Some(neighbors.len());
+    position.push((0, 1));
     neighbors.push(Vec::new());
 
     relevant.push((n - 1, m - 2));
     index[n - 1][m - 2] = Some(neighbors.len());
+    position.push((n - 1, m - 2));
     neighbors.push(Vec::new());
 
     while let Some((i, j)) = relevant.pop() {
@@ -47,6 +50,7 @@ fn make_graph(grid: &Vec<Vec<u8>>) -> Vec<Vec<(usize, u32)>> {
             visited: &mut Vec<Vec<bool>>,
             relevant: &mut Vec<(usize, usize)>,
             index: &mut Vec<Vec<Option<usize>>>,
+            position: &mut Vec<(usize, usize)>,
             neighbors: &mut Vec<Vec<(usize, u32)>>,
         ) {
             let (n, m) = (grid.len(), grid[0].len());
@@ -63,6 +67,7 @@ fn make_graph(grid: &Vec<Vec<u8>>) -> Vec<Vec<(usize, u32)>> {
                     if index[ni][nj].is_none() {
                         relevant.push((ni, nj));
                         index[ni][nj] = Some(neighbors.len());
+                        position.push((ni, nj));
                         neighbors.push(Vec::new());
                     }
 
@@ -78,6 +83,7 @@ fn make_graph(grid: &Vec<Vec<u8>>) -> Vec<Vec<(usize, u32)>> {
                     visited,
                     relevant,
                     index,
+                    position,
                     neighbors,
                 );
             };
@@ -107,11 +113,12 @@ fn make_graph(grid: &Vec<Vec<u8>>) -> Vec<Vec<(usize, u32)>> {
             &mut visited,
             &mut relevant,
             &mut index,
+            &mut position,
             &mut neighbors,
         );
     }
 
-    neighbors
+    (neighbors, position)
 }
 
 fn dfs(
@@ -141,8 +148,17 @@ fn dfs(
 pub fn part1(input: &str) -> u32 {
     let grid = parse(input);
 
-    let neighbors = make_graph(&grid);
+    let (neighbors, position) = make_graph(&grid);
     let n = neighbors.len();
+
+    println!("digraph {{");
+    for i in 0..n {
+        println!("{} [ pos = \"{},-{}!\" ]", i, position[i].1, position[i].0);
+        for (ni, d) in neighbors[i].iter() {
+            println!("{} -> {} [ label=\"{}\" ]", i, ni, d);
+        }
+    }
+    println!("}}");
 
     let mut ans = 0;
 
@@ -168,8 +184,17 @@ pub fn part2(input: &str) -> u32 {
         }
     }
 
-    let neighbors = make_graph(&grid);
+    let (neighbors, position) = make_graph(&grid);
     let n = neighbors.len();
+
+    println!("digraph {{");
+    for i in 0..n {
+        println!("{} [ pos = \"{},-{}!\" ]", i, position[i].1, position[i].0);
+        for (ni, d) in neighbors[i].iter() {
+            println!("{} -> {} [ label=\"{}\" ]", i, ni, d);
+        }
+    }
+    println!("}}");
 
     let mut ans = 0;
 
